@@ -33,7 +33,14 @@ export type Event = {
   };
   
   export type ServiceCategory = 'mc' | 'comedian' | 'catering' | 'photography' | 'decoration';
-  
+
+  export type PortfolioItem = {
+    id: string;
+    url: string;
+    type: 'image' | 'video';
+    thumbnail?: string;
+  };
+
   export type ServiceProvider = {
     id: string;
     name: string;
@@ -44,6 +51,7 @@ export type Event = {
     rating: number;
     reviews: number;
     location: string;
+    portfolio?: PortfolioItem[];
   };
   
   export type BookingStatus = 'pending' | 'accepted' | 'rejected' | 'refunded';

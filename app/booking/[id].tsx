@@ -12,7 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, MapPin, Star, ChevronRight } from 'lucide-react-native';
+import { Calendar, MapPin, Star, ChevronRight, ArrowRight, Clock } from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useApp } from '@/context/AppContext';
 import { mockServiceProviders } from '@/mocks/services';
 import Colors from '@/constants/colors';
@@ -21,7 +22,9 @@ export default function BookingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addToCart } = useApp();
   const router = useRouter();
-  const [eventDate, setEventDate] = useState('');
+  const [eventDateTime, setEventDateTime] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [location, setLocation] = useState('');
   const [bidAmount, setBidAmount] = useState('');
 
@@ -35,8 +38,62 @@ export default function BookingScreen() {
     );
   }
 
+  const formatDateTime = (date: Date) => {
+    const dateStr = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+    return `${dateStr} ${timeStr}`;
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      if (event.type === 'set' && selectedDate) {
+        const newDate = new Date(selectedDate);
+        newDate.setHours(eventDateTime.getHours());
+        newDate.setMinutes(eventDateTime.getMinutes());
+        setEventDateTime(newDate);
+      }
+    } else {
+      // iOS
+      if (selectedDate) {
+        const newDate = new Date(selectedDate);
+        newDate.setHours(eventDateTime.getHours());
+        newDate.setMinutes(eventDateTime.getMinutes());
+        setEventDateTime(newDate);
+      }
+    }
+  };
+
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+      if (event.type === 'set' && selectedTime) {
+        const newDate = new Date(eventDateTime);
+        newDate.setHours(selectedTime.getHours());
+        newDate.setMinutes(selectedTime.getMinutes());
+        setEventDateTime(newDate);
+      }
+    } else {
+      // iOS
+      if (selectedTime) {
+        const newDate = new Date(eventDateTime);
+        newDate.setHours(selectedTime.getHours());
+        newDate.setMinutes(selectedTime.getMinutes());
+        setEventDateTime(newDate);
+      }
+    }
+  };
+
   const handleAddToCart = () => {
-    if (!eventDate || !location || !bidAmount) {
+    if (!eventDateTime || !location || !bidAmount) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -50,7 +107,7 @@ export default function BookingScreen() {
     addToCart({
       providerId: provider.id,
       provider,
-      eventDate,
+      eventDate: eventDateTime.toISOString(),
       location,
       bidAmount: amount,
     });
@@ -106,18 +163,88 @@ export default function BookingScreen() {
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>
-                Event Date <Text style={styles.required}>*</Text>
+                Event Date & Time <Text style={styles.required}>*</Text>
               </Text>
-              <View style={styles.inputContainer}>
+              
+              <TouchableOpacity
+                style={styles.inputContainer}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.7}
+              >
                 <Calendar size={18} color={Colors.textSecondary} />
-                <TextInput
-                  style={styles.input}
-                  value={eventDate}
-                  onChangeText={setEventDate}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={Colors.textTertiary}
-                />
-              </View>
+                <Text style={[styles.input, !eventDateTime && styles.placeholderText]}>
+                  {eventDateTime ? formatDateTime(eventDateTime) : 'Select date and time'}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={eventDateTime}
+                    mode="date"
+                    is24Hour={false}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleDateChange}
+                    minimumDate={new Date()}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <View style={styles.iosPickerActions}>
+                      <TouchableOpacity
+                        style={styles.pickerButton}
+                        onPress={() => setShowDatePicker(false)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.pickerButtonText}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {Platform.OS === 'android' && (
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => setShowTimePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Clock size={16} color={Colors.primary} />
+                  <Text style={styles.timeButtonText}>Select Time</Text>
+                </TouchableOpacity>
+              )}
+
+              {showTimePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={eventDateTime}
+                    mode="time"
+                    is24Hour={false}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleTimeChange}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <View style={styles.iosPickerActions}>
+                      <TouchableOpacity
+                        style={styles.pickerButton}
+                        onPress={() => setShowTimePicker(false)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.pickerButtonText}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {Platform.OS === 'ios' && !showDatePicker && !showTimePicker && (
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => setShowTimePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Clock size={16} color={Colors.primary} />
+                  <Text style={styles.timeButtonText}>Select Time</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.formGroup}>
@@ -164,6 +291,15 @@ export default function BookingScreen() {
               4. You can request a refund if rejected
             </Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.catalogLink}
+            onPress={() => router.push('/(tabs)/services' as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.catalogLinkText}>Browse Catalog</Text>
+            <ArrowRight size={18} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -317,6 +453,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
   },
+  placeholderText: {
+    color: Colors.textTertiary,
+  },
+  pickerContainer: {
+    marginTop: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: Platform.OS === 'ios' ? 16 : 0,
+    borderWidth: Platform.OS === 'ios' ? 1 : 0,
+    borderColor: Colors.border,
+  },
+  iosPickerActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  pickerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  pickerButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600' as const,
+  },
+  timeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignSelf: 'flex-start',
+  },
+  timeButtonText: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: Colors.primary,
+  },
   hint: {
     fontSize: 13,
     color: Colors.textSecondary,
@@ -339,6 +519,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 20,
+  },
+  catalogLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    marginTop: 8,
+  },
+  catalogLinkText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: Colors.primary,
   },
   footer: {
     padding: 20,

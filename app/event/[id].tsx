@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Modal,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Calendar, MapPin, Trash2, QrCode, Users } from 'lucide-react-native';
+import { Calendar, MapPin, Trash2, QrCode, Users, Wallet, TrendingDown, X } from 'lucide-react-native';
 import { useApp } from '@/context/AppContext';
 import Colors from '@/constants/colors';
 
@@ -18,6 +20,7 @@ export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { events, deleteEvent, getEventAttendees } = useApp();
   const router = useRouter();
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
   const event = events.find((e) => e.id === id);
   const attendees = getEventAttendees(id);
@@ -42,6 +45,29 @@ export default function EventDetailsScreen() {
         },
       },
     ]);
+  };
+
+  const handleWithdrawal = () => {
+    const revenue = event.revenue;
+    const withdrawalFee = revenue * 0.05;
+    const amountToReceive = revenue - withdrawalFee;
+
+    Alert.alert(
+      'Confirm Withdrawal',
+      `Are you sure you want to withdraw ₦${amountToReceive.toLocaleString()}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Withdraw',
+          style: 'default',
+          onPress: () => {
+            Alert.alert('Success', `₦${amountToReceive.toLocaleString()} has been sent to your account.`);
+            setShowWithdrawModal(false);
+            // Here you would typically call an API to process the withdrawal
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -104,6 +130,78 @@ export default function EventDetailsScreen() {
               </View>
             ))}
           </View>
+
+          {/* Revenue & Withdrawal Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Revenue</Text>
+            <TouchableOpacity
+              style={styles.withdrawButton}
+              onPress={() => setShowWithdrawModal(true)}
+              activeOpacity={0.7}
+              disabled={event.revenue === 0}
+            >
+              <TrendingDown size={20} color="#fff" strokeWidth={2.5} />
+              <Text style={styles.withdrawButtonText}>Withdraw Funds</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Withdrawal Modal */}
+          <Modal
+            visible={showWithdrawModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setShowWithdrawModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Withdraw Funds</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowWithdrawModal(false)}
+                    style={styles.closeButton}
+                    activeOpacity={0.7}
+                  >
+                    <X size={24} color={Colors.text} />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.revenueCard}>
+                  <View style={styles.revenueHeader}>
+                    <View style={styles.revenueIconContainer}>
+                      <Wallet size={24} color={Colors.success} strokeWidth={2.5} />
+                    </View>
+                    <View style={styles.revenueInfo}>
+                      <Text style={styles.revenueLabel}>Total Revenue</Text>
+                      <Text style={styles.revenueAmount}>₦{event.revenue.toLocaleString()}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.revenueDivider} />
+
+                  <View style={styles.withdrawalInfo}>
+                    <View style={styles.withdrawalRow}>
+                      <Text style={styles.withdrawalLabel}>Withdrawal Fee (5%)</Text>
+                      <Text style={styles.withdrawalFee}>-₦{(event.revenue * 0.05).toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.withdrawalRow}>
+                      <Text style={styles.withdrawalLabel}>You'll Receive</Text>
+                      <Text style={styles.withdrawalAmount}>₦{(event.revenue * 0.95).toLocaleString()}</Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.withdrawButton}
+                    onPress={handleWithdrawal}
+                    activeOpacity={0.7}
+                    disabled={event.revenue === 0}
+                  >
+                    <TrendingDown size={20} color="#fff" strokeWidth={2.5} />
+                    <Text style={styles.withdrawButtonText}>Withdraw Funds</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
 
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -381,5 +479,129 @@ const styles = StyleSheet.create({
     color: Colors.error,
     fontSize: 16,
     fontWeight: '600' as const,
+  },
+  revenueCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  revenueHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 16,
+  },
+  revenueIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: Colors.success + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  revenueInfo: {
+    flex: 1,
+  },
+  revenueLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500' as const,
+    marginBottom: 4,
+  },
+  revenueAmount: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    color: Colors.success,
+    letterSpacing: -0.5,
+  },
+  revenueDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginBottom: 16,
+  },
+  withdrawalInfo: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  withdrawalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  withdrawalLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500' as const,
+  },
+  withdrawalFee: {
+    fontSize: 15,
+    color: Colors.error,
+    fontWeight: '600' as const,
+  },
+  withdrawalAmount: {
+    fontSize: 18,
+    color: Colors.text,
+    fontWeight: '700' as const,
+  },
+  withdrawButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.success,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.success,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  withdrawButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600' as const,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: Colors.text,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
 });

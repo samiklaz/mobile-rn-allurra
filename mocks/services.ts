@@ -11,6 +11,12 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.8,
     reviews: 156,
     location: 'Lagos',
+    portfolio: [
+      { id: 'p1', url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400', type: 'image' },
+      { id: 'p2', url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400', type: 'image' },
+      { id: 'p3', url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400', type: 'image' },
+      { id: 'p4', url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400', type: 'image' },
+    ],
   },
   {
     id: 's2',
@@ -22,6 +28,11 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.9,
     reviews: 203,
     location: 'Lagos',
+    portfolio: [
+      { id: 'p5', url: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400', type: 'image' },
+      { id: 'p6', url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400', type: 'image' },
+      { id: 'p7', url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400', type: 'image' },
+    ],
   },
   {
     id: 's3',
@@ -33,6 +44,13 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.7,
     reviews: 89,
     location: 'Lagos',
+    portfolio: [
+      { id: 'p8', url: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=400', type: 'image' },
+      { id: 'p9', url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400', type: 'image' },
+      { id: 'p10', url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400', type: 'image' },
+      { id: 'p11', url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400', type: 'image' },
+      { id: 'p12', url: 'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=400', type: 'image' },
+    ],
   },
   {
     id: 's4',
@@ -44,6 +62,12 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.9,
     reviews: 267,
     location: 'Lagos',
+    portfolio: [
+      { id: 'p13', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', type: 'image' },
+      { id: 'p14', url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400', type: 'image' },
+      { id: 'p15', url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400', type: 'image' },
+      { id: 'p16', url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400', type: 'image' },
+    ],
   },
   {
     id: 's5',
@@ -55,6 +79,12 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.6,
     reviews: 124,
     location: 'Lagos',
+    portfolio: [
+      { id: 'p17', url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400', type: 'image' },
+      { id: 'p18', url: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=400', type: 'image' },
+      { id: 'p19', url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400', type: 'image' },
+      { id: 'p20', url: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=400', type: 'image' },
+    ],
   },
   {
     id: 's6',
@@ -66,5 +96,10 @@ export const mockServiceProviders: ServiceProvider[] = [
     rating: 4.8,
     reviews: 178,
     location: 'Abuja',
+    portfolio: [
+      { id: 'p21', url: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400', type: 'image' },
+      { id: 'p22', url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400', type: 'image' },
+      { id: 'p23', url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400', type: 'image' },
+    ],
   },
 ];

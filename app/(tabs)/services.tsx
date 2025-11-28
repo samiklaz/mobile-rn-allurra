@@ -11,7 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Search, ShoppingCart } from 'lucide-react-native';
+import { Search, ShoppingCart, Star, MapPin, ArrowUpRight } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '@/context/AppContext';
 import { mockServiceProviders } from '@/mocks/services';
 import { ServiceCategory } from '@/types';
@@ -41,27 +42,34 @@ export default function ServicesScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Services</Text>
-          <Text style={styles.subtitle}>Book entertainers & vendors</Text>
+      {/* Modern Header with Gradient */}
+      <LinearGradient
+        colors={[Colors.primary + '08', 'transparent']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Services</Text>
+            <Text style={styles.subtitle}>Book entertainers & vendors</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.cartButton}
+            onPress={() => router.push('/checkout' as any)}
+            activeOpacity={0.7}
+          >
+            <ShoppingCart size={22} color={Colors.text} strokeWidth={2.5} />
+            {cart.length > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cart.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={() => router.push('/checkout' as any)}
-          activeOpacity={0.7}
-        >
-          <ShoppingCart size={24} color={Colors.text} />
-          {cart.length > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cart.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
+      {/* Enhanced Search Bar */}
       <View style={styles.searchContainer}>
-        <Search size={20} color={Colors.textSecondary} />
+        <Search size={20} color={Colors.textSecondary} strokeWidth={2.5} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search services..."
@@ -71,12 +79,14 @@ export default function ServicesScreen() {
         />
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesScroll}
-        contentContainerStyle={styles.categoriesContent}
-      >
+      {/* Modern Category Chips */}
+      <View style={styles.categoriesContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
+          contentContainerStyle={styles.categoriesContent}
+        >
         <TouchableOpacity
           style={[styles.categoryChip, selectedCategory === 'all' && styles.categoryChipActive]}
           onPress={() => setSelectedCategory('all')}
@@ -108,8 +118,10 @@ export default function ServicesScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
+      {/* Enhanced Provider Cards */}
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.providersList}>
           {filteredProviders.map((provider) => (
@@ -117,22 +129,47 @@ export default function ServicesScreen() {
               key={provider.id}
               style={styles.providerCard}
               onPress={() => router.push(`/booking/${provider.id}` as any)}
-              activeOpacity={0.8}
+              activeOpacity={0.95}
             >
-              <Image source={{ uri: provider.imageUrl }} style={styles.providerImage} contentFit="cover" />
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: provider.imageUrl }} style={styles.providerImage} contentFit="cover" />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.7)']}
+                  style={styles.imageGradient}
+                >
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>{CATEGORIES.find(c => c.id === provider.category)?.label}</Text>
+                  </View>
+                </LinearGradient>
+              </View>
+
               <View style={styles.providerContent}>
-                <Text style={styles.providerName}>{provider.name}</Text>
+                <View style={styles.providerHeader}>
+                  <View style={styles.providerTitleContainer}>
+                    <Text style={styles.providerName} numberOfLines={1}>{provider.name}</Text>
+                    <View style={styles.ratingContainer}>
+                      <Star size={14} color={Colors.warning} fill={Colors.warning} strokeWidth={2} />
+                      <Text style={styles.ratingText}>{provider.rating}</Text>
+                      <Text style={styles.reviewsText}>({provider.reviews})</Text>
+                    </View>
+                  </View>
+                  <ArrowUpRight size={20} color={Colors.textTertiary} strokeWidth={2} />
+                </View>
+
                 <Text style={styles.providerDescription} numberOfLines={2}>
                   {provider.description}
                 </Text>
-                <View style={styles.providerMeta}>
-                  <View style={styles.rating}>
-                    <Text style={styles.ratingText}>⭐ {provider.rating}</Text>
-                    <Text style={styles.reviewsText}>({provider.reviews})</Text>
+
+                <View style={styles.providerFooter}>
+                  <View style={styles.locationContainer}>
+                    <MapPin size={14} color={Colors.textSecondary} strokeWidth={2.5} />
+                    <Text style={styles.location} numberOfLines={1}>{provider.location}</Text>
                   </View>
-                  <Text style={styles.price}>From ₦{(provider.basePrice / 1000).toFixed(0)}K</Text>
+                  <View style={styles.priceContainer}>
+                    <Text style={styles.priceLabel}>From</Text>
+                    <Text style={styles.price}>₦{(provider.basePrice / 1000).toFixed(0)}K</Text>
+                  </View>
                 </View>
-                <Text style={styles.location}>📍 {provider.location}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -147,20 +184,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  headerGradient: {
+    paddingBottom: 20,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 4,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
   subtitle: {
     fontSize: 15,
@@ -171,21 +210,32 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: 48,
     height: 48,
-    borderRadius: 14,
+    borderRadius: 24,
     backgroundColor: Colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   cartBadge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: -6,
+    right: -6,
     backgroundColor: Colors.primary,
     borderRadius: 12,
-    minWidth: 22,
-    height: 22,
+    minWidth: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 6,
@@ -205,9 +255,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === 'ios' ? 14 : 10,
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   searchInput: {
     flex: 1,
@@ -215,19 +276,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
   },
+  categoriesContainer: {
+    marginBottom: 12,
+    paddingBottom: 0,
+    overflow: 'hidden',
+  },
   categoriesScroll: {
-    marginBottom: 20,
+    marginBottom: 0,
+    marginTop: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   categoriesContent: {
     paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 0,
+    marginBottom: 0,
     gap: 10,
+    alignItems: 'center',
   },
   categoryChip: {
     paddingHorizontal: 20,
-    height: 40,
+    height: 42,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 21,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -235,6 +308,17 @@ const styles = StyleSheet.create({
   categoryChipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   categoryChipText: {
     fontSize: 14,
@@ -246,47 +330,84 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    marginTop: 0,
+    paddingTop: 0,
   },
   providersList: {
     paddingHorizontal: 20,
+    paddingTop: 0,
+    marginTop: 0,
     paddingBottom: 20,
     gap: 16,
   },
   providerCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: Colors.border,
     overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  imageContainer: {
+    position: 'relative',
   },
   providerImage: {
     width: '100%',
-    height: 220,
+    height: 200,
+  },
+  imageGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  categoryBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backdropFilter: 'blur(10px)',
+  },
+  categoryBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600' as const,
   },
   providerContent: {
-    padding: 16,
+    padding: 18,
+  },
+  providerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  providerTitleContainer: {
+    flex: 1,
+    marginRight: 12,
   },
   providerName: {
     fontSize: 19,
     fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: 6,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
-  providerDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 14,
-    fontWeight: '500' as const,
-  },
-  providerMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  rating: {
+  ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -295,21 +416,54 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600' as const,
     color: Colors.text,
+    marginLeft: 2,
   },
   reviewsText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '500' as const,
   },
-  price: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: Colors.primary,
-    letterSpacing: -0.3,
+  providerDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 21,
+    marginBottom: 16,
+    fontWeight: '500' as const,
+  },
+  providerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+    marginRight: 12,
   },
   location: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
     fontWeight: '500' as const,
+    flex: 1,
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  priceLabel: {
+    fontSize: 11,
+    color: Colors.textTertiary,
+    fontWeight: '500' as const,
+    marginBottom: 2,
+  },
+  price: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+    letterSpacing: -0.5,
   },
 });
